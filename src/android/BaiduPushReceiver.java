@@ -1,18 +1,20 @@
 package org.apache.cordova.baidu;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.apache.cordova.PluginResult;
+import me.leolin.shortcutbadger.ShortcutBadger;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
-import android.content.Intent;
+import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.baidu.android.pushservice.PushMessageReceiver;
-import com.baidu.android.pushservice.PushConstants;
 import __PACKAGE_NAME__;
 
 /**
@@ -25,7 +27,7 @@ public class BaiduPushReceiver extends PushMessageReceiver {
 
 	/** LOG TAG */
     private static final String LOG_TAG = BaiduPushReceiver.class.getSimpleName();
-    
+    private static final String KEY = "badge";
     /** 回调类型 */
     private enum CB_TYPE {
     	onbind,
@@ -192,6 +194,12 @@ public class BaiduPushReceiver extends PushMessageReceiver {
     }
 
     /**
+     * The Local storage for the application.
+     */
+    private SharedPreferences getSharedPreferences (Context context) {
+        return context.getSharedPreferences( "badge", Context.MODE_PRIVATE);
+    }
+    /**
      * 百度云推送透传消息回调
      */
     @Override
@@ -212,11 +220,19 @@ public class BaiduPushReceiver extends PushMessageReceiver {
             jsonObject.put("data", data);
             jsonObject.put("type", CB_TYPE.onmessage);
 
+            //如果透传消息格式为'badge=20'，设置图标的显示提醒数量，不支持乐视手机
+            String[] strarray = message.split( "=" );
+            if( strarray.length >= 2 ) {
+                Pattern pattern = Pattern.compile("[0-9]*");
+                if( strarray[0].equals( KEY ) && pattern.matcher(strarray[1]).matches() ) {
+                    ShortcutBadger.applyCount(context, Integer.parseInt( strarray[1] ) );
+                }
+            }
+
             sendPushData(jsonObject);
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
-        }
-        
+        } 
     }
 
     /**
@@ -245,16 +261,6 @@ public class BaiduPushReceiver extends PushMessageReceiver {
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
         }
-/*
-        Intent intent = new Intent();
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        intent.setClass(context, MainActivity.class);
-        intent.putExtra(PushConstants.EXTRA_PUSH_MESSAGE, title);
-        intent.putExtra(PushConstants.EXTRA_CONTENT, customContentString);
-        context.startActivity(intent);
-*/
-
     }
 
     /**

@@ -1,7 +1,10 @@
 package org.apache.cordova.baidu;
 
+import android.app.NotificationManager;
+
 import java.util.ArrayList;
 import java.util.List;
+import me.leolin.shortcutbadger.ShortcutBadger;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
@@ -90,9 +93,16 @@ public class BaiduPush extends CordovaPlugin {
             ret = true;
         } else if ("setApplicationIconBadgeNumber".equalsIgnoreCase(action)) {
 
+            final String badge = args.getString(0);
+            ShortcutBadger.removeCount(cordova.getActivity().getApplicationContext());
+
         } else if ("getApplicationIconBadgeNumber".equalsIgnoreCase(action)) {
 
         } else if ("clearAllNotifications".equalsIgnoreCase(action)) {
+
+            NotificationManager notificationManager = (NotificationManager)
+                    cordova.getActivity().getSystemService(android.content.Context.NOTIFICATION_SERVICE);
+            notificationManager.cancelAll();
 
         } else if ("hasPermission".equalsIgnoreCase(action)) {
 

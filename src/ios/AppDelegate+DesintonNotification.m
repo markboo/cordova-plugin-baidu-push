@@ -92,7 +92,7 @@
     return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
 
-//App收到推送的通知，IOS8以上版本使用
+//App收到推送的通知，IOS7以上版本使用
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
     
     // 应用在前台，不跳转页面，让用户选择。
@@ -108,6 +108,9 @@
         
         long silent = 0;
         id aps = [userInfo objectForKey:@"aps"];
+        
+        //如果只携带content-available: 1 不携带任何badge，sound和消息内容等参数，
+        //则可以不打扰用户的情况下进行内容更新等操作即为“Silent Remote Notifications”(静默推送)。
         id contentAvailable = [aps objectForKey:@"content-available"];
         
         if ([contentAvailable isKindOfClass:[NSString class]] && [contentAvailable isEqualToString:@"1"]) {
